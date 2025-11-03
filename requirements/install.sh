@@ -1,5 +1,12 @@
 #! /bin/bash
 
+# Prevent uv cache issues by clearing corrupted cache at the start
+if [ -d ~/.cache/uv/archive-v0 ] && [ -n "$(find ~/.cache/uv/archive-v0 -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -1)" ]; then
+    # Only clean if there are potentially problematic cache entries
+    echo "Clearing potentially corrupted uv cache..."
+    uv cache clean 2>/dev/null || rm -rf ~/.cache/uv/archive-v0 2>/dev/null || true
+fi
+
 TARGET="${1:-"openvla"}"
 EMBODIED_TARGET=("openvla" "openvla-oft" "openpi")
 
@@ -30,8 +37,11 @@ if [[ " ${EMBODIED_TARGET[*]} " == *" $TARGET "* ]]; then
     uv sync --extra embodied
     uv pip uninstall pynvml
     bash requirements/install_embodied_deps.sh # Must be run after the above command
-    mkdir -p /opt && git clone https://github.com/RLinf/LIBERO.git /opt/libero
-    echo "export PYTHONPATH=/opt/libero:$PYTHONPATH" >> .venv/bin/activate
+    # Clone LIBERO (skip if already exists)
+    if [ ! -d "/opt/libero" ]; then
+        mkdir -p /opt && git clone https://github.com/RLinf/LIBERO.git /opt/libero
+    fi
+    echo "export PYTHONPATH=/opt/libero:\$PYTHONPATH" >> .venv/bin/activate
 fi
 
 if [ "$TARGET" = "openvla" ]; then
@@ -39,10 +49,14 @@ if [ "$TARGET" = "openvla" ]; then
 elif [ "$TARGET" = "openvla-oft" ]; then
     UV_TORCH_BACKEND=auto uv pip install -r requirements/openvla-oft.txt --no-build-isolation
     if [ "$ENABLE_BEHAVIOR" = "true" ]; then
-        git clone -b RLinf/v3.7.1 --depth 1 https://github.com/RLinf/BEHAVIOR-1K.git /opt/BEHAVIOR-1K
+        # Clone BEHAVIOR-1K (skip if already exists)
+        if [ ! -d "/opt/BEHAVIOR-1K" ]; then
+            git clone -b RLinf/v3.7.1 --depth 1 https://github.com/RLinf/BEHAVIOR-1K.git /opt/BEHAVIOR-1K
+        fi
         cd /opt/BEHAVIOR-1K && ./setup.sh --omnigibson --bddl --joylo --confirm-no-conda --accept-nvidia-eula && cd -
         uv pip uninstall flash-attn
-        uv pip install https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.5cxx11abiFALSE-cp310-cp310-linux_x86_64.whl
+        # Use --no-cache to avoid corrupted cache directory issues
+        uv pip install --no-cache https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.5cxx11abiFALSE-cp310-cp310-linux_x86_64.whl
         uv pip install ml_dtypes==0.5.3 protobuf==3.20.3
         cd && uv pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 && cd -
     fi
@@ -53,7 +67,10 @@ elif [ "$TARGET" = "openpi" ]; then
 elif [ "$TARGET" = "reason" ]; then
     uv sync --extra sglang-vllm
     uv pip uninstall pynvml
-    mkdir -p /opt && git clone https://github.com/NVIDIA/Megatron-LM.git -b core_r0.13.0 /opt/Megatron-LM
+    # Clone Megatron-LM (skip if already exists)
+    if [ ! -d "/opt/Megatron-LM" ]; then
+        mkdir -p /opt && git clone https://github.com/NVIDIA/Megatron-LM.git -b core_r0.13.0 /opt/Megatron-LM
+    fi
     APEX_CPP_EXT=1 APEX_CUDA_EXT=1 NVCC_APPEND_FLAGS="--threads 24" APEX_PARALLEL_BUILD=24 uv pip install -r requirements/megatron.txt --no-build-isolation
     echo "export PYTHONPATH=/opt/Megatron-LM:$PYTHONPATH" >> .venv/bin/activate
 else

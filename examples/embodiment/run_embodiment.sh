@@ -10,6 +10,16 @@ export PYOPENGL_PLATFORM="egl"
 # NOTE: set LIBERO_REPO_PATH to the path of the LIBERO repo
 export LIBERO_REPO_PATH="/opt/libero"
 
+# Prevent Python from loading user site-packages to avoid conflicts
+export PYTHONNOUSERSITE=1
+
+# Suppress TensorFlow GPU warnings (TensorFlow is not used for computation)
+# Level 3 suppresses all warnings except fatal errors
+export TF_CPP_MIN_LOG_LEVEL=3
+
+# Suppress cuDNN/cuFFT/cuBLAS factory registration warnings
+export TF_XLA_FLAGS="--tf_xla_cpu_global_jit=false"
+
 export PYTHONPATH=${REPO_PATH}:${LIBERO_REPO_PATH}:$PYTHONPATH
 
 # Base path to the BEHAVIOR dataset, which is the BEHAVIOR-1k repo's dataset folder

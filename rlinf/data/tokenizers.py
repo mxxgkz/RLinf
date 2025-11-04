@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import warnings
 
 
@@ -51,6 +52,18 @@ def hf_tokenizer(name_or_path, correct_pad_token=True, correct_gemma2=True, **kw
 
     """
     from transformers import AutoTokenizer
+
+    # Resolve relative paths to absolute paths for local directories
+    # HuggingFace expects either absolute paths or valid repo IDs
+    if isinstance(name_or_path, str):
+        # Check if it's a local path (not a HuggingFace Hub repo ID)
+        # Repo IDs are in the form 'repo_name' or 'namespace/repo_name' (no slashes except for namespace/repo)
+        # Local paths typically contain slashes or start with ./
+        if os.path.sep in name_or_path or name_or_path.startswith("./"):
+            # Resolve to absolute path
+            name_or_path = os.path.abspath(name_or_path)
+            # Remove trailing slash if present (some paths in config have trailing slashes)
+            name_or_path = name_or_path.rstrip(os.path.sep)
 
     if (
         correct_gemma2

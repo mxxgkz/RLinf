@@ -1,11 +1,11 @@
 #! /bin/bash
 
-# Prevent uv cache issues by clearing corrupted cache at the start
-if [ -d ~/.cache/uv/archive-v0 ] && [ -n "$(find ~/.cache/uv/archive-v0 -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -1)" ]; then
-    # Only clean if there are potentially problematic cache entries
-    echo "Clearing potentially corrupted uv cache..."
-    uv cache clean 2>/dev/null || rm -rf ~/.cache/uv/archive-v0 2>/dev/null || true
-fi
+# # Prevent uv cache issues by clearing corrupted cache at the start
+# if [ -d ~/.cache/uv/archive-v0 ] && [ -n "$(find ~/.cache/uv/archive-v0 -mindepth 1 -maxdepth 1 -type d 2>/dev/null | head -1)" ]; then
+#     # Only clean if there are potentially problematic cache entries
+#     echo "Clearing potentially corrupted uv cache..."
+#     uv cache clean 2>/dev/null || rm -rf ~/.cache/uv/archive-v0 2>/dev/null || true
+# fi
 
 TARGET="${1:-"openvla"}"
 EMBODIED_TARGET=("openvla" "openvla-oft" "openpi")

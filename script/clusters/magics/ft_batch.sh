@@ -1,0 +1,78 @@
+#!/bin/bash
+while IFS=$' ' read IDX HOUR CORE MEM CFG_NAME
+do
+STD_OUTPUT_FILE="/home/guo/RL/RLinf/script/clusters/std_output/${IDX}.log"
+
+JOB=`sbatch << EOJ
+#!/bin/bash
+#SBATCH -J ${IDX}
+#SBATCH -p job
+#SBATCH -t ${HOUR}:59:59
+#SBATCH --gres=gpu:4
+#SBATCH --mem=${MEM}G
+#SBATCH --cpus-per-task=${CORE}
+#SBATCH --output=${STD_OUTPUT_FILE}
+#SBATCH --mail-type=BEGIN,FAIL,END,REQUEUE #BEGIN,END,FAIL,REQUEUE
+#SBATCH --mail-user=zkghhg@gmail.com
+
+#Delete any preceding space after 'EOJ'. OW, there will be some error.
+
+# unload any modules that carried over from your command line session
+module purge
+
+# Set your working directory
+cd "/home/guo/RL/RLinf"
+
+# load modules you need to use
+# module load python/anaconda3.6
+
+conda init bash
+
+which conda
+
+# Source the setup script that handles venv detection, environment setup, and asset downloads
+# This avoids heredoc variable expansion issues - all variables work normally in a separate script
+source "/home/guo/RL/RLinf/script/clusters/magics/setup_embodiment_env.sh"
+
+# GPU rendering support (needed for ManiSkill/SAPIEN rendering)
+export NVIDIA_DRIVER_CAPABILITIES="all"
+export MUJOCO_GL="egl"
+export PYOPENGL_PLATFORM="egl"
+
+# PyTorch CUDA memory allocator configuration to reduce fragmentation
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+# Suppress TensorFlow GPU warnings (TensorFlow is not used for computation)
+# Level 3 suppresses all warnings except fatal errors
+export TF_CPP_MIN_LOG_LEVEL=3
+
+# Suppress cuDNN/cuFFT/cuBLAS factory registration warnings
+export TF_XLA_FLAGS="--tf_xla_cpu_global_jit=false"
+
+# # A command you actually want to execute:
+# java -jar <someinput> <someoutput>
+# # Another command you actually want to execute, if needed:
+# python myscript.py
+
+which python
+
+bash examples/embodiment/run_embodiment.sh ${CFG_NAME}
+
+EOJ
+`
+
+# print out the job id for reference later
+echo "JobID = ${JOB} for indices ${IDX} and parameters ${CFG_NAME} submitted on `date`"
+
+sleep 0.5
+
+done < /home/guo/RL/RLinf/script/clusters/magics/param.info
+# done < ./command_script/param_unet_exp.info
+# done < ./command_script/param_trex_online.info
+# done < ./command_script/param_ar_lin_2d.info
+exit
+
+# make this file executable and then run from the command line
+# chmod u+x submit.sh
+# ./submit.sh
+# The last line of params.txt have to be an empty line.

@@ -28,6 +28,7 @@ from rlinf.data.io_struct import (
     RolloutResult,
     SeqGroupInfo,
 )
+from rlinf.data.tokenizers import hf_tokenizer
 from rlinf.scheduler import Channel, Cluster, Worker
 from rlinf.scheduler.dynamic_scheduler.manager import RolloutScalingScheduler
 from rlinf.scheduler.dynamic_scheduler.utils import (
@@ -50,7 +51,7 @@ class SGLangWorker(Worker):
         self._cfg = config
         self._placement = placement
 
-        self._tokenizer = AutoTokenizer.from_pretrained(self._cfg.rollout.model_dir)
+        self._tokenizer = hf_tokenizer(self._cfg.rollout.model_dir)
         self._return_logprobs = self._cfg.rollout.return_logprobs
         self._sampling_params = SGLangWorker.get_sampling_param_from_config(self._cfg)
 

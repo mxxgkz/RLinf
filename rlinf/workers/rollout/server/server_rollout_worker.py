@@ -28,6 +28,7 @@ from transformers import AutoTokenizer
 from rlinf.data.io_struct import (
     RolloutResult,
 )
+from rlinf.data.tokenizers import hf_tokenizer
 from rlinf.scheduler import Channel, Worker
 
 
@@ -162,7 +163,7 @@ class ServerRolloutWorker(Worker):
         self._cfg = cfg
 
         # Initialize tokenizer for text processing
-        self._tokenizer = AutoTokenizer.from_pretrained(self._cfg.rollout.model_dir)
+        self._tokenizer = hf_tokenizer(self._cfg.rollout.model_dir)
 
         # Configuration
         self._server_host = cfg.server.tracking_rollout.get("host", "0.0.0.0")

@@ -18,6 +18,7 @@ import torch
 from omegaconf import DictConfig
 from torch.distributed.fsdp import (
     BackwardPrefetch,
+    FullStateDictConfig,
     MixedPrecision,
     ShardingStrategy,
     StateDictType,
@@ -290,12 +291,21 @@ class FSDPModelManager:
         return grad_norm, lrs
 
     def get_model_state_dict(self):
-        with FSDP.state_dict_type(self.model, StateDictType.FULL_STATE_DICT):
+        # Use CPU offloading for FULL_STATE_DICT to avoid OOM when syncing to rollout
+        # This offloads the unsharded parameters to CPU during state dict creation
+        state_dict_config = FullStateDictConfig(offload_to_cpu=True, rank0_only=False)
+        with FSDP.state_dict_type(
+            self.model, StateDictType.FULL_STATE_DICT, state_dict_config=state_dict_config
+        ):
             state_dict = self.model.state_dict()
         return state_dict
 
     def get_optimizer_state_dict(self):
-        with FSDP.state_dict_type(self.model, StateDictType.FULL_STATE_DICT):
+        # Use CPU offloading to avoid OOM
+        state_dict_config = FullStateDictConfig(offload_to_cpu=True, rank0_only=False)
+        with FSDP.state_dict_type(
+            self.model, StateDictType.FULL_STATE_DICT, state_dict_config=state_dict_config
+        ):
             state_dict = FSDP.optim_state_dict(self.model, self.optimizer)
         return state_dict
 

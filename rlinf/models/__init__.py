@@ -27,6 +27,34 @@ from transformers import (
 from rlinf.config import torch_dtype_from_precision
 
 
+def _resolve_model_path(path):
+    """Resolve relative paths to absolute paths for local model directories.
+    
+    HuggingFace expects either absolute paths or valid repo IDs.
+    This function converts relative paths to absolute paths.
+    
+    Args:
+        path: Path string that may be relative or absolute
+        
+    Returns:
+        Resolved absolute path if it's a local path, or original path if it's a repo ID
+    """
+    if not isinstance(path, str):
+        return path
+    
+    # Check if it's a local path (not a HuggingFace Hub repo ID)
+    # Repo IDs are in the form 'repo_name' or 'namespace/repo_name' (no slashes except for namespace/repo)
+    # Local paths typically contain slashes or start with ./
+    if os.path.sep in path or path.startswith("./"):
+        # Resolve to absolute path
+        resolved = os.path.abspath(path)
+        # Remove trailing slash if present (some paths in config have trailing slashes)
+        resolved = resolved.rstrip(os.path.sep)
+        return resolved
+    
+    return path
+
+
 def get_vla_model_config_and_processor(cfg: DictConfig):
     if cfg.model.model_name == "openvla":
         from prismatic.extern.hf.configuration_prismatic import OpenVLAConfig
@@ -40,10 +68,11 @@ def get_vla_model_config_and_processor(cfg: DictConfig):
         AutoImageProcessor.register(OpenVLAConfig, PrismaticImageProcessor)
         AutoProcessor.register(OpenVLAConfig, PrismaticProcessor)
 
-        model_config = AutoConfig.from_pretrained(cfg.tokenizer.tokenizer_model)
+        tokenizer_model_path = _resolve_model_path(cfg.tokenizer.tokenizer_model)
+        model_config = AutoConfig.from_pretrained(tokenizer_model_path)
 
         dataset_statistics_path = os.path.join(
-            cfg.tokenizer.tokenizer_model, "dataset_statistics.json"
+            tokenizer_model_path, "dataset_statistics.json"
         )
         if os.path.isfile(dataset_statistics_path):
             with open(dataset_statistics_path, "r") as f:
@@ -52,13 +81,13 @@ def get_vla_model_config_and_processor(cfg: DictConfig):
                 norm_stats.update(new_norm_stats)
                 setattr(model_config, "norm_stats", norm_stats)
         image_processor = PrismaticImageProcessor.from_pretrained(
-            cfg.tokenizer.tokenizer_model, trust_remote_code=True
+            tokenizer_model_path, trust_remote_code=True
         )
         tokenizer = AutoTokenizer.from_pretrained(
-            cfg.tokenizer.tokenizer_model, trust_remote_code=True, padding_side="left"
+            tokenizer_model_path, trust_remote_code=True, padding_side="left"
         )
         input_processor = PrismaticProcessor.from_pretrained(
-            cfg.tokenizer.tokenizer_model,
+            tokenizer_model_path,
             tokenizer=tokenizer,
             image_processor=image_processor,
             trust_remote_code=True,
@@ -77,17 +106,18 @@ def get_vla_model_config_and_processor(cfg: DictConfig):
         AutoImageProcessor.register(OpenVLAOFTConfig, PrismaticImageProcessor)
         AutoProcessor.register(OpenVLAOFTConfig, PrismaticProcessorOFT)
 
+        tokenizer_model_path = _resolve_model_path(cfg.tokenizer.tokenizer_model)
         model_config = OpenVLAOFTConfig.from_pretrained(
-            cfg.tokenizer.tokenizer_model, center_crop=cfg.model.center_crop
+            tokenizer_model_path, center_crop=cfg.model.center_crop
         )
         image_processor = PrismaticImageProcessor.from_pretrained(
-            cfg.tokenizer.tokenizer_model, trust_remote_code=True
+            tokenizer_model_path, trust_remote_code=True
         )
         tokenizer = AutoTokenizer.from_pretrained(
-            cfg.tokenizer.tokenizer_model, trust_remote_code=True, padding_side="left"
+            tokenizer_model_path, trust_remote_code=True, padding_side="left"
         )
         input_processor = PrismaticProcessorOFT.from_pretrained(
-            cfg.tokenizer.tokenizer_model,
+            tokenizer_model_path,
             tokenizer=tokenizer,
             image_processor=image_processor,
             trust_remote_code=True,
@@ -98,6 +128,9 @@ def get_vla_model_config_and_processor(cfg: DictConfig):
 
 def get_model(model_path, cfg: DictConfig, override_config_kwargs=None):
     torch_dtype = torch_dtype_from_precision(cfg.precision)
+    # Resolve model_path to absolute path if it's a local path
+    model_path = _resolve_model_path(model_path)
+    
     if cfg.model_name == "openvla":
         from prismatic.extern.hf.configuration_prismatic import OpenVLAConfig
 
@@ -246,11 +279,13 @@ def get_model(model_path, cfg: DictConfig, override_config_kwargs=None):
 
     else:
         return None
-    if torch.cuda.is_available():
+    # For FSDP, models should stay on CPU and let FSDP handle device placement
+    # Only move to CUDA if low_cpu_mem_usage is False (not using FSDP)
+    if torch.cuda.is_available() and not cfg.get("low_cpu_mem_usage", False):
         model = model.cuda()
 
     if cfg.is_lora:
-        from peft import LoraConfig, PeftModel, get_peft_model
+        from peft import LoraConfig, PeftModel, get_peft_model  # type: ignore
 
         if not hasattr(cfg, "lora_path") or cfg.lora_path is None:
             lora_config = LoraConfig(

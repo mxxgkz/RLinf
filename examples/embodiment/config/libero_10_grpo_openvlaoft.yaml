@@ -11,9 +11,11 @@ hydra:
     - file://${oc.env:EMBODIED_PATH}/config/
 
 cluster:
-  num_nodes: 1
-  component_placement:
-    actor,env,rollout: all
+   num_nodes: 1
+   component_placement:
+      env: 0-3
+      rollout: 4-7
+      actor: 0-7
 
 runner:
   task_type: embodied
@@ -103,7 +105,7 @@ rollout:
   model_dir: "/path/to/model/Openvla-oft-SFT-libero10-traj1/"
 
   enable_offload: False
-  pipeline_stage_num: 1
+  pipeline_stage_num: 2
 
 actor:
   group_name: "ActorGroup"

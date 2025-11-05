@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import gc
 import json
 import os
 
@@ -282,6 +283,9 @@ def get_model(model_path, cfg: DictConfig, override_config_kwargs=None):
     # For FSDP, models should stay on CPU and let FSDP handle device placement
     # Only move to CUDA if low_cpu_mem_usage is False (not using FSDP)
     if torch.cuda.is_available() and not cfg.get("low_cpu_mem_usage", False):
+        # Clear any existing fragmentation
+        torch.cuda.empty_cache()
+        gc.collect()
         model = model.cuda()
 
     if cfg.is_lora:

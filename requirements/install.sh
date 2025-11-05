@@ -63,7 +63,7 @@ elif [ "$TARGET" = "openvla-oft" ]; then
 elif [ "$TARGET" = "openpi" ]; then
     UV_TORCH_BACKEND=auto GIT_LFS_SKIP_SMUDGE=1 uv pip install -r requirements/openpi.txt
     cp -r .venv/lib/python3.11/site-packages/openpi/models_pytorch/transformers_replace/* .venv/lib/python3.11/site-packages/transformers/
-    export TOKENIZER_DIR=/root/.cache/openpi/big_vision/ && mkdir -p $TOKENIZER_DIR && gsutil -m cp -r gs://big_vision/paligemma_tokenizer.model $TOKENIZER_DIR
+    export TOKENIZER_DIR=$HOME/.cache/openpi/big_vision/ && mkdir -p $TOKENIZER_DIR && gsutil -m cp -r gs://big_vision/paligemma_tokenizer.model $TOKENIZER_DIR
 elif [ "$TARGET" = "reason" ]; then
     uv sync --extra sglang-vllm
     uv pip uninstall pynvml

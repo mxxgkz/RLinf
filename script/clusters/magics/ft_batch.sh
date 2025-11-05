@@ -1,14 +1,14 @@
 #!/bin/bash
-while IFS=$' ' read IDX HOUR CORE MEM CFG_NAME
+while IFS=$' ' read IDX PAR HOUR CORE MEM NGPU CFG_NAME
 do
 STD_OUTPUT_FILE="/home/guo/RL/RLinf/script/clusters/std_output/${IDX}.log"
 
 JOB=`sbatch << EOJ
 #!/bin/bash
 #SBATCH -J ${IDX}
-#SBATCH -p job
+#SBATCH -p ${PAR}
 #SBATCH -t ${HOUR}:59:59
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:${NGPU}
 #SBATCH --mem=${MEM}G
 #SBATCH --cpus-per-task=${CORE}
 #SBATCH --output=${STD_OUTPUT_FILE}

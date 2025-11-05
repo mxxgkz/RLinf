@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import logging
 
 import hydra
 import torch.multiprocessing as mp
@@ -26,6 +27,13 @@ from rlinf.workers.actor.fsdp_actor_worker import EmbodiedFSDPActor
 from rlinf.workers.env.env_worker import EnvWorker
 from rlinf.workers.rollout.hf.huggingface_worker import MultiStepRolloutWorker
 
+
+format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+logging.basicConfig(format=format)
+# Get a logger
+logger = logging.getLogger(__name__)
+logging.getLogger(__name__).setLevel(logging.INFO)
+
 mp.set_start_method("spawn", force=True)
 
 
@@ -33,8 +41,9 @@ mp.set_start_method("spawn", force=True)
     version_base="1.1", config_path="config", config_name="maniskill_ppo_openvlaoft"
 )
 def main(cfg) -> None:
+    print("!"*50)
     cfg = validate_cfg(cfg)
-    print(json.dumps(OmegaConf.to_container(cfg, resolve=True), indent=2))
+    logger.info(json.dumps(OmegaConf.to_container(cfg, resolve=True), indent=2))
 
     cluster = Cluster(num_nodes=cfg.cluster.num_nodes)
     component_placement = HybridComponentPlacement(cfg, cluster)

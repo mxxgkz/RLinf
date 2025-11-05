@@ -1,0 +1,6 @@
+maniskill2 24 16 128 2 maniskill_ppo_openvla_quickstart
+maniskill_vla job_a100 10 64 640 8 maniskill_ppo_openvla
+maniskill_vla job_a100 10 64 640 8 maniskill_ppo_openvla_mini
+libero_goal_ppo_pi job_a100 10 64 640 8 libero_goal_ppo_openpi
+libero_10_ppo_pi job_a100 10 64 640 8 libero_10_ppo_openpi
+libero_10_ppo_pi_lora job_a100 10 64 640 8 libero_10_ppo_openpi

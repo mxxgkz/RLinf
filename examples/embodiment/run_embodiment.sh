@@ -17,6 +17,12 @@ export PYTHONNOUSERSITE=1
 # Level 3 suppresses all warnings except fatal errors
 export TF_CPP_MIN_LOG_LEVEL=3
 
+export XLA_PYTHON_CLIENT_MEM_FRACTION=0.8
+
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+
+export PYTHONPATH="$HOME/RL/libero:$PYTHONPATH"
+
 # Suppress cuDNN/cuFFT/cuBLAS factory registration warnings
 export TF_XLA_FLAGS="--tf_xla_cpu_global_jit=false"
 
@@ -40,6 +46,7 @@ if [ -z "$1" ]; then
 else
     CONFIG_NAME=$1
 fi
+echo "CONFIG_NAME: ${CONFIG_NAME}"
 
 echo "Using Python at $(which python)"
 LOG_DIR="${REPO_PATH}/logs/$(date +'%Y%m%d-%H:%M:%S')" #/$(date +'%Y%m%d-%H:%M:%S')"

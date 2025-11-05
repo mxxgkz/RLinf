@@ -4,11 +4,16 @@ export EMBODIED_PATH="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export REPO_PATH=$(dirname $(dirname "$EMBODIED_PATH"))
 export SRC_FILE="${EMBODIED_PATH}/train_embodied_agent.py"
 
-export MUJOCO_GL="egl"
-export PYOPENGL_PLATFORM="egl"
+# Use OSMesa for LIBERO (robosuite) as EGL may not be available on compute nodes
+# OSMesa is slower but works without GPU graphics drivers
+# For ManiSkill tasks, EGL is still preferred (set in batch script)
+export MUJOCO_GL="osmesa"
+export PYOPENGL_PLATFORM="osmesa"
 
 # NOTE: set LIBERO_REPO_PATH to the path of the LIBERO repo
-export LIBERO_REPO_PATH="/opt/libero"
+export LIBERO_REPO_PATH="$HOME/RL/libero"
+export LIBERO_NO_INPUT=1 # disable the input prompt
+export TORCH_FORCE_WEIGHTS_ONLY_LOAD=0
 
 # Prevent Python from loading user site-packages to avoid conflicts
 export PYTHONNOUSERSITE=1
@@ -21,7 +26,7 @@ export XLA_PYTHON_CLIENT_MEM_FRACTION=0.8
 
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-export PYTHONPATH="$HOME/RL/libero:$PYTHONPATH"
+# export PYTHONPATH="$HOME/RL/libero:$PYTHONPATH"
 
 # Suppress cuDNN/cuFFT/cuBLAS factory registration warnings
 export TF_XLA_FLAGS="--tf_xla_cpu_global_jit=false"

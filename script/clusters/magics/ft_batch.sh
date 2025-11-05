@@ -36,8 +36,8 @@ source "/home/guo/RL/RLinf/script/clusters/magics/setup_embodiment_env.sh"
 
 # GPU rendering support (needed for ManiSkill/SAPIEN rendering)
 export NVIDIA_DRIVER_CAPABILITIES="all"
-export MUJOCO_GL="egl"
-export PYOPENGL_PLATFORM="egl"
+# export MUJOCO_GL="egl"
+# export PYOPENGL_PLATFORM="egl"
 
 # PyTorch CUDA memory allocator configuration to reduce fragmentation
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True

@@ -24,6 +24,25 @@ from libero.libero.benchmark import Benchmark
 from libero.libero.envs import OffScreenRenderEnv
 from omegaconf.omegaconf import OmegaConf
 
+# # Monkey-patch torch.load to handle PyTorch 2.6's weights_only=True default
+# # LIBERO init_states files contain NumPy arrays and need weights_only=False
+# # Import the benchmark module to access its torch namespace
+# import libero.libero.benchmark as libero_benchmark_module
+
+# _original_torch_load = torch.load
+
+# def _patched_torch_load(*args, **kwargs):
+#     # If weights_only is not explicitly set, default to False for backward compatibility
+#     if "weights_only" not in kwargs:
+#         kwargs["weights_only"] = False
+#     return _original_torch_load(*args, **kwargs)
+
+# # Patch torch.load in both the global torch module and the libero benchmark module
+# torch.load = _patched_torch_load
+# # Also patch it in the benchmark module's namespace in case it uses its own torch reference
+# if hasattr(libero_benchmark_module, "torch"):
+#     libero_benchmark_module.torch.load = _patched_torch_load
+
 from rlinf.envs.libero.utils import (
     get_benchmark_overridden,
     get_libero_image,

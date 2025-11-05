@@ -19,6 +19,20 @@ import hydra
 import torch.multiprocessing as mp
 from omegaconf.omegaconf import OmegaConf
 
+# import torch
+
+# # Monkey-patch the problematic torch.load call in libero
+# original_torch_load = torch.load
+
+# def patched_torch_load(*args, **kwargs):
+#     # Force weights_only=False for libero dataset files
+#     if 'weights_only' not in kwargs:
+#         kwargs['weights_only'] = False
+#     return original_torch_load(*args, **kwargs)
+
+# # Apply the patch
+# torch.load = patched_torch_load
+
 from rlinf.config import validate_cfg
 from rlinf.runners.embodied_runner import EmbodiedRunner
 from rlinf.scheduler import Cluster
@@ -41,7 +55,6 @@ mp.set_start_method("spawn", force=True)
     version_base="1.1", config_path="config", config_name="maniskill_ppo_openvlaoft"
 )
 def main(cfg) -> None:
-    print("!"*50)
     cfg = validate_cfg(cfg)
     logger.info(json.dumps(OmegaConf.to_container(cfg, resolve=True), indent=2))
 

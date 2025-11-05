@@ -13,8 +13,8 @@ hydra:
 cluster:
   num_nodes: 1
   component_placement:
-      env: 6-7
-      rollout: 2-5
+      env: 0-1
+      rollout: 0-1
       actor: 0-1
 
 runner:
@@ -169,3 +169,7 @@ reward:
 
 critic:
   use_critic_model: False
+
+video_cfg:
+  save_video: False
+  info_on_video: False

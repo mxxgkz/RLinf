@@ -14,24 +14,11 @@
 
 import json
 import logging
+import os
 
 import hydra
 import torch.multiprocessing as mp
 from omegaconf.omegaconf import OmegaConf
-
-# import torch
-
-# # Monkey-patch the problematic torch.load call in libero
-# original_torch_load = torch.load
-
-# def patched_torch_load(*args, **kwargs):
-#     # Force weights_only=False for libero dataset files
-#     if 'weights_only' not in kwargs:
-#         kwargs['weights_only'] = False
-#     return original_torch_load(*args, **kwargs)
-
-# # Apply the patch
-# torch.load = patched_torch_load
 
 from rlinf.config import validate_cfg
 from rlinf.runners.embodied_runner import EmbodiedRunner
@@ -56,9 +43,25 @@ mp.set_start_method("spawn", force=True)
 )
 def main(cfg) -> None:
     cfg = validate_cfg(cfg)
+    print("!"*50)
     logger.info(json.dumps(OmegaConf.to_container(cfg, resolve=True), indent=2))
 
-    cluster = Cluster(num_nodes=cfg.cluster.num_nodes)
+    # Set local_mode=True if needed for debugging
+    # You can also set environment variable: export RAY_LOCAL_MODE=true
+    logger.info("!"*50)
+    logger.info(f"cfg.ray.local_mode: {cfg.ray.local_mode}")
+    logger.info(f"os.environ.get('RAY_LOCAL_MODE', 'not set'): {os.environ.get('RAY_LOCAL_MODE', 'not set')}")
+    
+    # Extract ray.init() kwargs from config (excluding local_mode which is handled separately)
+    ray_init_kwargs = {}
+    if hasattr(cfg.ray, 'init_kwargs'):
+        ray_init_kwargs = OmegaConf.to_container(cfg.ray.init_kwargs, resolve=True) or {}
+    
+    cluster = Cluster(
+        num_nodes=cfg.cluster.num_nodes, 
+        local_mode=cfg.ray.local_mode,
+        ray_init_kwargs=ray_init_kwargs
+    )
     component_placement = HybridComponentPlacement(cfg, cluster)
 
     # Create actor worker group

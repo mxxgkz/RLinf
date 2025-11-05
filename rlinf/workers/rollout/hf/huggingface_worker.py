@@ -58,6 +58,12 @@ class MultiStepRolloutWorker(Worker):
         self.setup_sample_params()
         if self.cfg.rollout.get("enable_offload", False):
             self.offload_model()
+        else:
+            # If offload is disabled, ensure model is on CUDA
+            if torch.cuda.is_available():
+                device = f"cuda:{self.device}" if isinstance(self.device, int) else self.device
+                torch.cuda.set_device(self.device if isinstance(self.device, int) else int(str(self.device).split(':')[-1]))
+                self.hf_model = self.hf_model.to(device)
 
     def setup_sample_params(self):
         # length parameters for rollout
@@ -186,7 +192,19 @@ class MultiStepRolloutWorker(Worker):
         torch.cuda.empty_cache()
 
     def reload_model(self):
-        self.hf_model = self.hf_model.to(self.device)
+        # Ensure device is a proper CUDA device string
+        if isinstance(self.device, int):
+            device = f"cuda:{self.device}"
+        else:
+            device = self.device
+        # Explicitly set CUDA device before moving model
+        if torch.cuda.is_available():
+            torch.cuda.set_device(self.device if isinstance(self.device, int) else int(str(self.device).split(':')[-1]))
+        print("!"*50)
+        print(f"Current device: {torch.cuda.current_device()}")
+        print(f"Reloading model to device: {device}")
+        self.hf_model = self.hf_model.to(device)
+        torch.cuda.empty_cache()  # Clear cache after loading
 
     def sync_model_from_actor(self):
         param_state_dict = self.recv(self._actor_group_name, src_rank=self._rank)

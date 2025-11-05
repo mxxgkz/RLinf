@@ -92,16 +92,25 @@ class Cluster:
             cls._instance._has_initialized = False
         return cls._instance
 
-    def __init__(self, num_nodes: Optional[int] = None):
+    def __init__(self, num_nodes: Optional[int] = None, local_mode: Optional[bool] = None, ray_init_kwargs: Optional[Dict] = None):
         """Initialize the cluster.
 
         Args:
             num_nodes (int): The number of nodes in the cluster. When you wish to acquire the cluster instance in a processes other than the main driver process, do not pass this argument. Instead, use the `Cluster()` constructor without arguments.
+            local_mode (bool, optional): If True, run Ray in local mode (single-threaded for debugging). 
+                If None, checks RAY_LOCAL_MODE environment variable. Default is False.
+            ray_init_kwargs (dict, optional): Additional keyword arguments to pass to ray.init().
+                These will be merged with default ray.init() parameters.
         """
         if self._has_initialized:
             return
         if num_nodes is not None:
             self._ray_instance_count = 0
+            # Check environment variable if local_mode not explicitly provided
+            if local_mode is None:
+                local_mode = os.environ.get("RAY_LOCAL_MODE", "false").lower() == "true"
+            self._local_mode = local_mode
+            self._ray_init_kwargs = ray_init_kwargs or {}
             self._init_and_launch_managers(num_nodes)
         else:
             self._init_from_existing_managers()
@@ -144,27 +153,34 @@ class Cluster:
         if "RAY_DEDUP_LOGS" not in os.environ:
             # Default disabling deduplication of logs to ensure all logs are printed.
             ray_logging.RAY_DEDUP_LOGS = 0
+        # Prepare base ray.init() arguments
+        base_kwargs = {
+            "local_mode": self._local_mode,
+            "logging_level": Cluster.LOGGING_LEVEL,
+            "namespace": Cluster.NAMESPACE,
+        }
+        if not self._local_mode:
+            base_kwargs["address"] = "auto"
+            base_kwargs["runtime_env"] = {"env_vars": dict(os.environ)}
+        
+        # Merge with user-provided ray_init_kwargs (user kwargs take precedence)
+        ray_init_kwargs = {**base_kwargs, **self._ray_init_kwargs}
+        
         try:
             # First try to connect to an existing Ray cluster
-            ray.init(
-                address="auto",
-                logging_level=Cluster.LOGGING_LEVEL,
-                namespace=Cluster.NAMESPACE,
-                runtime_env={"env_vars": dict(os.environ)},
-            )
+            ray.init(**ray_init_kwargs)
         except ConnectionError:
-            ray.init(
-                logging_level=Cluster.LOGGING_LEVEL,
-                namespace=Cluster.NAMESPACE,
-                runtime_env={"env_vars": dict(os.environ)},
-            )
+            # If connecting fails, try without address (local init)
+            ray_init_kwargs.pop("address", None)
+            ray.init(**ray_init_kwargs)
 
-        # Wait for the cluster to be ready
-        while len(ray.nodes()) < self._num_nodes:
-            self._logger.warning(
-                f"Waiting for {self._num_nodes} nodes to be ready, currently {len(ray.nodes())} nodes available."
-            )
-            time.sleep(1)
+        # Wait for the cluster to be ready (skip in local_mode)
+        if not self._local_mode:
+            while len(ray.nodes()) < self._num_nodes:
+                self._logger.warning(
+                    f"Waiting for {self._num_nodes} nodes to be ready, currently {len(ray.nodes())} nodes available."
+                )
+                time.sleep(1)
 
         self._nodes: List[NodeInfo] = []
         for node in ray.nodes():

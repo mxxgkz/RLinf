@@ -9,10 +9,53 @@ export PYTHONNOUSERSITE=1
 # Remove Python 3.7 user site-packages from PYTHONPATH if present
 export PYTHONPATH=$(echo $PYTHONPATH | tr ':' '\n' | grep -v "/home/kzy816/.local/lib/python3.7/site-packages" | tr '\n' ':' | sed 's/:$//')
 
+# Disable SSL verification for downloads (common in HPC/cluster environments)
+export CURL_CA_BUNDLE=""
+export REQUESTS_CA_BUNDLE=""
+export PYTHONHTTPSVERIFY=0
+
 # Download ManiSkill assets (non-interactive)
 echo "Downloading ManiSkill assets..."
-python -m mani_skill.utils.download_asset bridge_v2_real2sim -y 2>&1 || echo "Warning: bridge_v2_real2sim download failed (may already exist)"
-python -m mani_skill.utils.download_asset widowx250s -y 2>&1 || echo "Warning: widowx250s download failed (may already exist)"
+
+# Try Python download first, with SSL verification disabled via wrapper
+python -c "
+import ssl
+import sys
+ssl._create_default_https_context = ssl._create_unverified_context
+sys.argv = ['download_asset', 'bridge_v2_real2sim', '-y']
+from mani_skill.utils.download_asset import main
+main()
+" 2>&1 || {
+    echo "Python download failed, trying direct download..."
+    ASSET_URL="https://huggingface.co/datasets/haosulab/ManiSkill_bridge_v2_real2sim/resolve/main/bridge_v2_real2sim_dataset.zip"
+    ASSET_ZIP="${MS_ASSET_DIR:-$HOME/.maniskill/data}/bridge_v2_real2sim_dataset.zip"
+    mkdir -p "$(dirname "$ASSET_ZIP")"
+    if command -v wget &> /dev/null; then
+        wget --no-check-certificate -O "$ASSET_ZIP" "$ASSET_URL" 2>&1 && unzip -q -o "$ASSET_ZIP" -d "$(dirname "$ASSET_ZIP")" && rm -f "$ASSET_ZIP"
+    elif command -v curl &> /dev/null; then
+        curl -k -L -o "$ASSET_ZIP" "$ASSET_URL" 2>&1 && unzip -q -o "$ASSET_ZIP" -d "$(dirname "$ASSET_ZIP")" && rm -f "$ASSET_ZIP"
+    fi
+}
+
+python -c "
+import ssl
+import sys
+ssl._create_default_https_context = ssl._create_unverified_context
+sys.argv = ['download_asset', 'widowx250s', '-y']
+from mani_skill.utils.download_asset import main
+main()
+" 2>&1 || {
+    echo "Python download failed, trying direct download..."
+    ROBOT_URL="https://github.com/haosulab/ManiSkill-WidowX250S/archive/refs/tags/v0.2.0.zip"
+    ROBOT_ZIP="/tmp/widowx250s.zip"
+    ROBOT_DIR="${MS_ROBOT_DIR:-$HOME/.maniskill/data/robots}"
+    mkdir -p "$ROBOT_DIR"
+    if command -v wget &> /dev/null; then
+        wget --no-check-certificate -O "$ROBOT_ZIP" "$ROBOT_URL" 2>&1 && unzip -q -o "$ROBOT_ZIP" -d "$ROBOT_DIR" && rm -f "$ROBOT_ZIP"
+    elif command -v curl &> /dev/null; then
+        curl -k -L -o "$ROBOT_ZIP" "$ROBOT_URL" 2>&1 && unzip -q -o "$ROBOT_ZIP" -d "$ROBOT_DIR" && rm -f "$ROBOT_ZIP"
+    fi
+}
 
 # Download PhysX library for SAPIEN
 PHYSX_VERSION=105.1-physx-5.3.1.patch0

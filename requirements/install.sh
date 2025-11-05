@@ -28,6 +28,12 @@ if [ "$ENABLE_BEHAVIOR" = "true" ]; then
     PYTHON_VERSION="3.10"
 fi
 
+if [[ $(hostname) == magic* ]]; then
+    ROOT_DIR="${HOME}/RL/RLinf"
+else
+    ROOT_DIR="/projects/p30309/RL/RLinf"
+fi
+
 # Common dependencies
 uv venv --python=$PYTHON_VERSION
 source .venv/bin/activate
@@ -38,10 +44,10 @@ if [[ " ${EMBODIED_TARGET[*]} " == *" $TARGET "* ]]; then
     uv pip uninstall pynvml
     bash requirements/install_embodied_deps.sh # Must be run after the above command
     # Clone LIBERO (skip if already exists)
-    if [ ! -d "/opt/libero" ]; then
-        mkdir -p /opt && git clone https://github.com/RLinf/LIBERO.git /opt/libero
+    if [ ! -d "${ROOT_DIR}/../libero" ]; then
+        mkdir -p ${ROOT_DIR}/../libero && git clone https://github.com/RLinf/LIBERO.git ${ROOT_DIR}/../libero
     fi
-    echo "export PYTHONPATH=/opt/libero:\$PYTHONPATH" >> .venv/bin/activate
+    echo "export PYTHONPATH=${ROOT_DIR}/../libero:\$PYTHONPATH" >> .venv/bin/activate
 fi
 
 if [ "$TARGET" = "openvla" ]; then

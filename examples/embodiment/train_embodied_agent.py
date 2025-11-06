@@ -49,7 +49,11 @@ def main(cfg) -> None:
     # Set local_mode=True if needed for debugging
     # You can also set environment variable: export RAY_LOCAL_MODE=true
     logger.info("!"*50)
-    logger.info(f"cfg.ray.local_mode: {cfg.ray.local_mode}")
+    if "ray" in cfg:
+        local_mode = cfg.ray.get("local_mode", False)
+    else:
+        local_mode = os.environ.get('RAY_LOCAL_MODE', 'false').lower() == 'true'
+    logger.info(f"cfg.ray.local_mode: {local_mode}")
     logger.info(f"os.environ.get('RAY_LOCAL_MODE', 'not set'): {os.environ.get('RAY_LOCAL_MODE', 'not set')}")
     
     # Extract ray.init() kwargs from config (excluding local_mode which is handled separately)
@@ -59,7 +63,7 @@ def main(cfg) -> None:
     
     cluster = Cluster(
         num_nodes=cfg.cluster.num_nodes, 
-        local_mode=cfg.ray.local_mode,
+        local_mode=local_mode,
         ray_init_kwargs=ray_init_kwargs
     )
     component_placement = HybridComponentPlacement(cfg, cluster)

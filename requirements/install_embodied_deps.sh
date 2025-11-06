@@ -23,8 +23,9 @@ import ssl
 import sys
 ssl._create_default_https_context = ssl._create_unverified_context
 sys.argv = ['download_asset', 'bridge_v2_real2sim', '-y']
-from mani_skill.utils.download_asset import main
-main()
+from mani_skill.utils.download_asset import main, get_parser
+args = get_parser().parse_args()
+main(args)
 " 2>&1 || {
     echo "Python download failed, trying direct download..."
     ASSET_URL="https://huggingface.co/datasets/haosulab/ManiSkill_bridge_v2_real2sim/resolve/main/bridge_v2_real2sim_dataset.zip"
@@ -42,8 +43,9 @@ import ssl
 import sys
 ssl._create_default_https_context = ssl._create_unverified_context
 sys.argv = ['download_asset', 'widowx250s', '-y']
-from mani_skill.utils.download_asset import main
-main()
+from mani_skill.utils.download_asset import main, get_parser
+args = get_parser().parse_args()
+main(args)
 " 2>&1 || {
     echo "Python download failed, trying direct download..."
     ROBOT_URL="https://github.com/haosulab/ManiSkill-WidowX250S/archive/refs/tags/v0.2.0.zip"

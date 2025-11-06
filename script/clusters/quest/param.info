@@ -1,1 +1,1 @@
-maniskill_vla gengpu 2 64 640 2 maniskill_ppo_openvla_mini
+maniskill_vla_mini gengpu 3 64 640 2 maniskill_ppo_openvla_mini

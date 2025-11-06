@@ -10,13 +10,19 @@ export SRC_FILE="${EMBODIED_PATH}/train_embodied_agent.py"
 # export MUJOCO_GL="osmesa"
 # export PYOPENGL_PLATFORM="osmesa"  # PyOpenGL still needs a platform, but won't be used
 
+if [[ $(hostname) == magic* ]]; then
+    ROOT_DIR="${HOME}/RL/RLinf"
+else
+    ROOT_DIR="/projects/p30309/RL/RLinf"
+fi
+
 # NOTE: set LIBERO_REPO_PATH to the path of the LIBERO repo
-export LIBERO_REPO_PATH="$HOME/RL/libero"
+export LIBERO_REPO_PATH="${ROOT_DIR}/RL/libero"
 export LIBERO_NO_INPUT=1 # disable the input prompt
 export TORCH_FORCE_WEIGHTS_ONLY_LOAD=0
 export RAY_DISABLE_PIDFD=1
-export RAY_LOCAL_MODE=1
-export CUDA_VISIBLE_DEVICES="6,7"
+# export RAY_LOCAL_MODE=1
+# export CUDA_VISIBLE_DEVICES="6,7"
 
 # Prevent Python from loading user site-packages to avoid conflicts
 export PYTHONNOUSERSITE=1

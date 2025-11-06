@@ -5,8 +5,33 @@
 
 set -e  # Exit on error
 
-REPO_DIR="${1:-/projects/p30309/RL/RLinf}"
-HOME_DIR="${2:-/home/kzy816}"
+# Source bashrc to get the get_rlinf_folder_name function (if available)
+# Define function if it doesn't exist (fallback)
+if ! declare -f get_rlinf_folder_name > /dev/null; then
+    get_rlinf_folder_name() {
+        local path="$1"
+        if [[ "$path" == *"RLinf_openpi"* ]]; then
+            echo "RLinf_openpi"
+        elif [[ "$path" == *"RLinf_openvla_oft"* ]]; then
+            echo "RLinf_openvla_oft"
+        elif [[ "$path" == *"RLinf_openvla"* ]]; then
+            echo "RLinf_openvla"
+        else
+            echo "RLinf"
+        fi
+    }
+fi
+
+EMBODIED_PATH="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FOLDER_NAME=$(get_rlinf_folder_name "$EMBODIED_PATH")
+
+if [[ $(hostname) == magic* ]]; then
+    ROOT_DIR="${HOME}/RL/${FOLDER_NAME}"
+else
+    ROOT_DIR="/projects/p30309/RL/${FOLDER_NAME}"
+fi
+
+REPO_DIR="${ROOT_DIR}"
 
 # Change to repository directory
 cd "${REPO_DIR}" || {
@@ -86,11 +111,9 @@ echo "Using Python: ${PYTHON}"
 echo "Python executable: ${PYTHON_EXE}"
 echo "Virtual environment: ${VIRTUAL_ENV}"
 
-# Set HOME if not set
-export HOME="${HOME:-${HOME_DIR}}"
 
 # Setup ManiSkill assets directory
-MS_ASSET_BASE="${HOME_DIR}/.maniskill"
+MS_ASSET_BASE="${HOME}/.maniskill"
 MS_ASSET_DIR="${MS_ASSET_BASE}/data/tasks"
 MS_ROBOT_DIR="${MS_ASSET_BASE}/data/robots"
 

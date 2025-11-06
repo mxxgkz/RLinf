@@ -44,7 +44,7 @@ algorithm:
   n_eval_chunk_steps: 80
   # training rollout mbs
   rollout_micro_batch_size: 64
-  num_group_envs: 32
+  num_group_envs: 16
   rollout_epoch: 1
 
   reward_type: action_level
@@ -193,11 +193,11 @@ ray:
     # Note: Since CUDA_VISIBLE_DEVICES="6,7" is set in run_embodiment.sh,
     # Ray will see these as gpu:0 and gpu:1. Use logical IDs here, not physical IDs.
     # Option 1: Use num_gpus (simpler, recommended)
-    num_gpus: 2
+    # num_gpus: 2
     # Option 2: Use custom resources with logical GPU IDs (not physical IDs)
-    # resources:
-    #   "gpu:0": 1
-    #   "gpu:1": 1
+    resources:
+      "gpu:0": 1
+      "gpu:1": 1
     # Option 3: If you want to specify physical GPU IDs as custom resources:
     # resources:
     #   "gpu:6": 1

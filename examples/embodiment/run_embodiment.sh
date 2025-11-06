@@ -1,5 +1,22 @@
 #! /bin/bash
 
+# Source bashrc to get the get_rlinf_folder_name function (if available)
+# Define function if it doesn't exist (fallback)
+if ! declare -f get_rlinf_folder_name > /dev/null; then
+    get_rlinf_folder_name() {
+        local path="$1"
+        if [[ "$path" == *"RLinf_openpi"* ]]; then
+            echo "RLinf_openpi"
+        elif [[ "$path" == *"RLinf_openvla_oft"* ]]; then
+            echo "RLinf_openvla_oft"
+        elif [[ "$path" == *"RLinf_openvla"* ]]; then
+            echo "RLinf_openvla"
+        else
+            echo "RLinf"
+        fi
+    }
+fi
+
 export EMBODIED_PATH="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export REPO_PATH=$(dirname $(dirname "$EMBODIED_PATH"))
 export SRC_FILE="${EMBODIED_PATH}/train_embodied_agent.py"
@@ -10,10 +27,13 @@ export SRC_FILE="${EMBODIED_PATH}/train_embodied_agent.py"
 # export MUJOCO_GL="osmesa"
 # export PYOPENGL_PLATFORM="osmesa"  # PyOpenGL still needs a platform, but won't be used
 
+# Check folder name using function from bashrc
+FOLDER_NAME=$(get_rlinf_folder_name "$EMBODIED_PATH")
+
 if [[ $(hostname) == magic* ]]; then
-    ROOT_DIR="${HOME}/RL/RLinf"
+    ROOT_DIR="${HOME}/RL/${FOLDER_NAME}"
 else
-    ROOT_DIR="/projects/p30309/RL/RLinf"
+    ROOT_DIR="/projects/p30309/RL/${FOLDER_NAME}"
 fi
 
 # NOTE: set LIBERO_REPO_PATH to the path of the LIBERO repo

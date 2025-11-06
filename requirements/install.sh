@@ -28,10 +28,28 @@ if [ "$ENABLE_BEHAVIOR" = "true" ]; then
     PYTHON_VERSION="3.10"
 fi
 
+# Check folder name using function from bashrc
+# Source bashrc in a way that doesn't fail if there are errors
+set +u  # Temporarily disable unbound variable check
+source ${HOME}/.bashrc 2>/dev/null || true
+set -u  # Re-enable unbound variable check
+
+# Ensure ~/.local/bin is in PATH (where uv is typically installed)
+export PATH="${HOME}/.local/bin:${PATH}"
+
+EMBODIED_PATH="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
+FOLDER_NAME=$(get_rlinf_folder_name "$EMBODIED_PATH")
+
 if [[ $(hostname) == magic* ]]; then
-    ROOT_DIR="${HOME}/RL/RLinf"
+    ROOT_DIR="${HOME}/RL/${FOLDER_NAME}"
 else
-    ROOT_DIR="/projects/p30309/RL/RLinf"
+    ROOT_DIR="/projects/p30309/RL/${FOLDER_NAME}"
+fi
+
+# Verify uv is available
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv command not found. Please install uv or ensure ~/.local/bin is in PATH."
+    exit 1
 fi
 
 # Common dependencies

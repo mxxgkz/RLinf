@@ -1,7 +1,15 @@
 #!/bin/bash
+
+# Get the repo root path and folder name BEFORE the loop (needed for the done < redirection)
+source ${HOME}/.bashrc
+SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
+echo "REPO_PATH = ${SCRIPT_DIR}"
+FOLDER_NAME=$(get_rlinf_folder_name "$SCRIPT_DIR")
+echo "FOLDER_NAME = ${FOLDER_NAME}"
+
 while IFS=$' ' read IDX PAR HOUR CORE MEM NGPU CFG_NAME
 do
-STD_OUTPUT_FILE="/home/guo/RL/RLinf/script/clusters/std_output/${IDX}.log"
+STD_OUTPUT_FILE="/home/guo/RL/${FOLDER_NAME}/script/clusters/std_output/${IDX}.log"
 
 JOB=`sbatch << EOJ
 #!/bin/bash
@@ -21,7 +29,7 @@ JOB=`sbatch << EOJ
 module purge
 
 # Set your working directory
-cd "/home/guo/RL/RLinf"
+cd "/home/guo/RL/${FOLDER_NAME}"
 
 # load modules you need to use
 # module load python/anaconda3.6
@@ -32,7 +40,7 @@ which conda
 
 # Source the setup script that handles venv detection, environment setup, and asset downloads
 # This avoids heredoc variable expansion issues - all variables work normally in a separate script
-source "/home/guo/RL/RLinf/script/clusters/magics/setup_embodiment_env.sh"
+source "/home/guo/RL/${FOLDER_NAME}/script/clusters/magics/setup_embodiment_env.sh"
 
 # GPU rendering support (needed for ManiSkill/SAPIEN rendering)
 export NVIDIA_DRIVER_CAPABILITIES="all"
@@ -66,7 +74,7 @@ echo "JobID = ${JOB} for indices ${IDX} and parameters ${CFG_NAME} submitted on 
 
 sleep 0.5
 
-done < /home/guo/RL/RLinf/script/clusters/magics/param.info
+done < /home/guo/RL/${FOLDER_NAME}/script/clusters/magics/param.info
 # done < ./command_script/param_unet_exp.info
 # done < ./command_script/param_trex_online.info
 # done < ./command_script/param_ar_lin_2d.info

@@ -2,5 +2,5 @@ maniskill1 16 20 256 maniskill_ppo_openvla_quickstart
 maniskill2 16 20 256 maniskill_ppo_openvla
 maniskill2_1 gengpu 3 20 256 2 maniskill_ppo_openvlaoft_quickstart
 maniskill_qs_2 gengpu 3 16 20 256 2 maniskill_ppo_openvla_quickstart
-libero_10_ppo_pi_lora gengpu 2 32 500 2 libero_10_ppo_openpi
+libero_10_ppo_pi gengpu 2 32 500 2 libero_10_ppo_openpi
 

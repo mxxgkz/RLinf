@@ -53,7 +53,10 @@ export TF_CPP_MIN_LOG_LEVEL=3
 
 export XLA_PYTHON_CLIENT_MEM_FRACTION=0.8
 
-export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+# PyTorch uses expandable_segments:True by default for better memory management
+# This requires the pidfd_open syscall for CUDA IPC between processes
+# However, this syscall is not available on all systems, so we disable it by default.
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False # Disable Expandable Segments (Immediate Fix)
 
 # export PYTHONPATH="$HOME/RL/libero:$PYTHONPATH"
 

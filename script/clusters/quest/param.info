@@ -1,1 +1,1 @@
-maniskill_qs_2 gengpu 3 16 20 256 2 maniskill_ppo_openvla_quickstart
+maniskill_mini gengpu 16 20 256 4 maniskill_ppo_openvla

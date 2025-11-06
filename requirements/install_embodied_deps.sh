@@ -22,9 +22,8 @@ python -c "
 import ssl
 import sys
 ssl._create_default_https_context = ssl._create_unverified_context
-sys.argv = ['download_asset', 'bridge_v2_real2sim', '-y']
-from mani_skill.utils.download_asset import main, get_parser
-args = get_parser().parse_args()
+from mani_skill.utils.download_asset import main, parse_args
+args = parse_args(['bridge_v2_real2sim', '-y'])
 main(args)
 " 2>&1 || {
     echo "Python download failed, trying direct download..."
@@ -42,9 +41,8 @@ python -c "
 import ssl
 import sys
 ssl._create_default_https_context = ssl._create_unverified_context
-sys.argv = ['download_asset', 'widowx250s', '-y']
-from mani_skill.utils.download_asset import main, get_parser
-args = get_parser().parse_args()
+from mani_skill.utils.download_asset import main, parse_args
+args = parse_args(['widowx250s', '-y'])
 main(args)
 " 2>&1 || {
     echo "Python download failed, trying direct download..."

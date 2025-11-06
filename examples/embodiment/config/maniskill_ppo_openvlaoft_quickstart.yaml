@@ -186,3 +186,22 @@ reward:
 critic:
   use_critic_model: False
 
+ray:
+  local_mode: False
+  # Additional parameters to pass to ray.init()
+  # These will be merged with default ray.init() parameters
+  init_kwargs:
+    "num_cpus": 16
+    # Note: Since CUDA_VISIBLE_DEVICES="6,7" is set in run_embodiment.sh,
+    # Ray will see these as gpu:0 and gpu:1. Use logical IDs here, not physical IDs.
+    # Option 1: Use num_gpus (simpler, recommended)
+    num_gpus: 2
+    # Option 2: Use custom resources with logical GPU IDs (not physical IDs)
+    # resources:
+    #   "gpu:0": 1
+    #   "gpu:1": 1
+    # Option 3: If you want to specify physical GPU IDs as custom resources:
+    # resources:
+    #   "gpu:6": 1
+    #   "gpu:7": 1
+

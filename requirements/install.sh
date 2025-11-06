@@ -63,7 +63,7 @@ if [[ " ${EMBODIED_TARGET[*]} " == *" $TARGET "* ]]; then
     bash requirements/install_embodied_deps.sh # Must be run after the above command
     # Clone LIBERO (skip if already exists)
     if [ ! -d "${ROOT_DIR}/../libero" ]; then
-        mkdir -p ${ROOT_DIR}/../libero && git clone https://github.com/RLinf/LIBERO.git ${ROOT_DIR}/../libero
+        git clone https://github.com/RLinf/LIBERO.git ${ROOT_DIR}/../libero
     fi
     echo "export PYTHONPATH=${ROOT_DIR}/../libero:\$PYTHONPATH" >> .venv/bin/activate
 fi
@@ -71,13 +71,13 @@ fi
 if [ "$TARGET" = "openvla" ]; then
     UV_TORCH_BACKEND=auto uv pip install -r requirements/openvla.txt --no-build-isolation
 elif [ "$TARGET" = "openvla-oft" ]; then
-    UV_TORCH_BACKEND=auto uv pip install -r requirements/openvla-oft.txt --no-build-isolation
+    UV_TORCH_BACKEND=auto uv pip install -r requirements/openvla_oft.txt --no-build-isolation
     if [ "$ENABLE_BEHAVIOR" = "true" ]; then
         # Clone BEHAVIOR-1K (skip if already exists)
-        if [ ! -d "/opt/BEHAVIOR-1K" ]; then
-            git clone -b RLinf/v3.7.1 --depth 1 https://github.com/RLinf/BEHAVIOR-1K.git /opt/BEHAVIOR-1K
+        if [ ! -d "${ROOT_DIR}/../BEHAVIOR-1K" ]; then
+            git clone -b RLinf/v3.7.1 --depth 1 https://github.com/RLinf/BEHAVIOR-1K.git ${ROOT_DIR}/../BEHAVIOR-1K
         fi
-        cd /opt/BEHAVIOR-1K && ./setup.sh --omnigibson --bddl --joylo --confirm-no-conda --accept-nvidia-eula && cd -
+        cd ${ROOT_DIR}/../BEHAVIOR-1K && ./setup.sh --omnigibson --bddl --joylo --confirm-no-conda --accept-nvidia-eula && cd -
         uv pip uninstall flash-attn
         # Use --no-cache to avoid corrupted cache directory issues
         uv pip install --no-cache https://github.com/Dao-AILab/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu12torch2.5cxx11abiFALSE-cp310-cp310-linux_x86_64.whl
@@ -92,11 +92,11 @@ elif [ "$TARGET" = "reason" ]; then
     uv sync --extra sglang-vllm
     uv pip uninstall pynvml
     # Clone Megatron-LM (skip if already exists)
-    if [ ! -d "/opt/Megatron-LM" ]; then
-        mkdir -p /opt && git clone https://github.com/NVIDIA/Megatron-LM.git -b core_r0.13.0 /opt/Megatron-LM
+    if [ ! -d "${ROOT_DIR}/../Megatron-LM" ]; then
+        git clone https://github.com/NVIDIA/Megatron-LM.git -b core_r0.13.0 ${ROOT_DIR}/../Megatron-LM
     fi
     APEX_CPP_EXT=1 APEX_CUDA_EXT=1 NVCC_APPEND_FLAGS="--threads 24" APEX_PARALLEL_BUILD=24 uv pip install -r requirements/megatron.txt --no-build-isolation
-    echo "export PYTHONPATH=/opt/Megatron-LM:$PYTHONPATH" >> .venv/bin/activate
+    echo "export PYTHONPATH=${ROOT_DIR}/../Megatron-LM:$PYTHONPATH" >> .venv/bin/activate
 else
     echo "Unknown target: $TARGET. Supported targets are: openvla, openvla-oft, openpi, reason."
     exit 1

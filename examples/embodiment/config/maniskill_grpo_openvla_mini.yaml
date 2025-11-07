@@ -1,6 +1,6 @@
 defaults:
-  - env/train: libero_goal
-  - env/eval: libero_goal
+  - env/train: PutOnPlateInScene25Main
+  - env/eval: PutOnPlateInScene25Main
   - override hydra/job_logging: stdout
 
 hydra:
@@ -13,49 +13,52 @@ hydra:
 cluster:
   num_nodes: 1
   component_placement:
-    actor,env,rollout: "0-1"
+    actor, env, rollout: "0-1"
 
 runner:
   task_type: embodied
   logger:
     log_path: "../results"
     project_name: rlinf
-    experiment_name: "test_openpi"
+    experiment_name: "test_openvla"
     logger_backends: ["tensorboard"] # wandb, swanlab
 
   max_epochs: 1000
   max_steps: -1
 
+  only_eval: False
   val_check_interval: -1
   save_interval: 40
-  seq_length: 4096
-  max_prompt_length: 50
+  seq_length: 2048  # Reduced from 4096 to save GPU memory
+  max_prompt_length: 30
 
 algorithm:
   auto_reset: False
   ignore_terminations: False
   use_fixed_reset_state_ids: True
+
   normalize_advantages: True
   kl_penalty: kl  # how to estimate kl divergence: kl or kl_penalty
-  max_episode_steps: 320
-  use_ordered_reset_state_ids: False
-  reward_coef: 1.0
-  group_size: 1
-  n_chunk_steps: 64
-  n_eval_chunk_steps: 64
-  num_group_envs: 16
-  rollout_epoch: 8
-  reward_type: chunk_level
-  logprob_type: chunk_level
+  group_size: 8
+
+  num_group_envs: 16  # Reduced from 32 to save GPU memory
+  rollout_epoch: 1  # Reduced from higher value to save memory
+
+  n_chunk_steps: 80  # Reduced from higher value to save memory
+  n_eval_chunk_steps: 80
+  rollout_micro_batch_size: 16  # Smaller batch size for rollout to reduce memory
+  logprob_forward_micro_batch_size: 8  # Smaller batch for logprob computation
+
+  reward_type: action_level
+  logprob_type: token_level
   entropy_type: token_level
 
-  update_epoch: 4
-  adv_type: gae
-  loss_type: actor_critic
-  loss_agg_func: "token-mean" 
+  adv_type: grpo
+  loss_type: actor
+  loss_agg_func: "token-mean"
   kl_beta: 0.0
   entropy_bonus: 0
-  clip_ratio_high: 0.2
+  clip_ratio_high: 0.28
   clip_ratio_low: 0.2
   clip_ratio_c: 3.0
   value_clip: 0.2
@@ -64,9 +67,6 @@ algorithm:
   gamma: 0.99
   gae_lambda: 0.95
 
-  filter_rewards: False
-  rewards_lower_bound: 0.1
-  rewards_upper_bound: 0.9
   # params for generation
   sampling_params:
     use_greedy: False
@@ -75,12 +75,11 @@ algorithm:
     top_k: 50
     top_p: 1.0
     repetition_penalty: 1.0
-    add_BOS: False
 
   # length argument for autoregressive sampling
   # max length means max amount of tokens to generate
   length_params:
-    max_new_token: null
+    max_new_token: 7
     max_length: 1024
     min_length: 1
 
@@ -90,7 +89,7 @@ env:
     name: "env_buffer_list"
     queue_name: "obs_buffer"
     queue_size: 0
-  enable_offload: False
+  enable_offload: True  # Enable offload to save GPU memory
 
 rollout:
   group_name: "RolloutGroup"
@@ -100,11 +99,9 @@ rollout:
     queue_size: 0
   mode: "colocate"
   generation_backend: "huggingface"
-  model_dir: "./pre_trained_model/RLinf-Pi0-SFT-Spatial-Object-Goal"
-  recompute_logprobs: False
-  unnorm_key: libero_10
-  enable_offload: False
-  pipeline_stage_num: 1
+  model_dir: "./pre_trained_model/openvla-7b-rlvla-warmup/"
+  enable_offload: True  # Enable offload to save GPU memory
+  pipeline_stage_num: 2
 
 actor:
   group_name: "ActorGroup"
@@ -113,45 +110,52 @@ actor:
     queue_name: "replay_buffer"
     queue_size: 0
   training_backend: "fsdp"
-  checkpoint_load_path: "./pre_trained_model/RLinf-Pi0-SFT-Spatial-Object-Goal"
+  checkpoint_load_path: "./pre_trained_model/openvla-7b-rlvla-warmup/"
   checkpoint_save_path: "../results"
-  micro_batch_size: 128
-  global_batch_size: 2048 # maximum : global batch size = micro batch size * actor num_processes.
-  seed: 42
-  enable_offload: False
+  micro_batch_size: 16  # Reduced from 40 to save GPU memory
+  global_batch_size: 256  # Reduced from 640 (proportional to micro_batch_size)
+  seed: 1234
+  enable_offload: True  # Enable offload to save GPU memory
+
+  tokenizer:
+    tokenizer_type: "HuggingFaceTokenizer"
+    tokenizer_model: "./pre_trained_model/openvla-7b-rlvla-warmup/"
+    use_fast: False
+    trust_remote_code: True
+    padding_side: "right"
 
   model:
-    model_name: "openpi"
-    precision: null
-    num_action_chunks: 5 # interface for the env
+    model_name: "openvla"
     action_dim: 7
-    is_lora: False
+    num_action_chunks: 1
+    use_proprio: False
+    unnorm_key: bridge_orig
+    center_crop: True
+
+    precision: "bf16"
+    add_bias_linear: False
+    add_qkv_bias: True
+    vocab_size: 32000
+    hidden_size: 4096
+    policy_setup: "widowx_bridge"
+    add_value_head: False
+    image_size: [224, 224]
+    is_lora: True  # Enable LoRA to reduce memory usage
     lora_rank: 32
-    gradient_checkpointing: False
-    use_wrist_image: True
-    use_proprio: True
-    num_steps: 4
-    sharding_strategy: "shard_grad_op"  # Changed from "no_shard" (deprecated in PyTorch 2.6, causes hangs)
-    add_value_head: True
-    # openpi specific parameters
-    openpi:
-      noise_level: 0.5
-      action_chunk: ${actor.model.num_action_chunks}
-      num_steps: ${actor.model.num_steps}
-      train_expert_only: True
-      action_env_dim: ${actor.model.action_dim}
-      noise_method: "flow_sde"
-      add_value_head: ${actor.model.add_value_head}
-      detach_critic_input: True
+    ckpt_path: null
+    use_wrist_image: False
+    attn_implementation: "flash_attention_2"
+    low_cpu_mem_usage: True
+    trust_remote_code: True
+    gradient_checkpointing: True  # Enable to trade compute for memory
 
   optim:
-    lr: 5.0e-6
-    value_lr: 1.0e-4
+    lr: 1.0e-5
+    value_lr: 3.0e-3
     adam_beta1: 0.9
-    adam_beta2: 0.95
+    adam_beta2: 0.999
     adam_eps: 1.0e-05
     clip_grad: 1.0
-    critic_warmup_steps: 0
 
   fsdp_config:                  # below are fsdp configs, for more details, see https://pytorch.org/docs/stable/fsdp.html and https://huggingface.co/docs/accelerate/package_reference/fsdp
     forward_prefetch: False      # if True, FSDP will explicitly prefetches the next upcoming all-gather while executing in the forward pass. only use with static graphs. Overlaps communication with computation to improve performance.

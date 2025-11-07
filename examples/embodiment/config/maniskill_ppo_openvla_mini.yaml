@@ -13,9 +13,7 @@ hydra:
 cluster:
   num_nodes: 1
   component_placement:
-    actor: "0-1"
-    env: "0-1"
-    rollout: "0-1"
+    actor,env,rollout: "0-3"
 
 runner:
   task_type: embodied
@@ -87,7 +85,7 @@ env:
     name: "env_buffer_list"
     queue_name: "obs_buffer"
     queue_size: 0
-  enable_offload: True
+  enable_offload: False  # Set to False to avoid pidfd_getfd permission error and hangs
 
 rollout:
   group_name: "RolloutGroup"
@@ -99,7 +97,7 @@ rollout:
   backend: "huggingface"
   model_dir: "./pre_trained_model/openvla-7b-rlvla-warmup/"
   enforce_eager: True
-  enable_offload: True
+  enable_offload: False  # Set to False to avoid pidfd_getfd permission error and hangs
   pipeline_stage_num: 2
 
 actor:
@@ -114,7 +112,7 @@ actor:
   micro_batch_size: 16  # Reduced from 40 to save GPU memory
   global_batch_size: 256  # Reduced from 640 (proportional to micro_batch_size)
   seed: 1234
-  enable_offload: True
+  enable_offload: False  # Set to False to avoid pidfd_getfd permission error and hangs
 
   model:
     model_name: "openvla"
@@ -172,7 +170,7 @@ critic:
   use_critic_model: False
 
 ray:
-  local_mode: False
+  local_mode: False  # Set to False to avoid deadlocks with multiprocessing
   # Additional parameters to pass to ray.init()
   # These will be merged with default ray.init() parameters
   init_kwargs:

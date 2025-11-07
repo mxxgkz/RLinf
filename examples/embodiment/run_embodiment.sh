@@ -91,6 +91,7 @@ else
     CONFIG_NAME=$1
 fi
 echo "CONFIG_NAME: ${CONFIG_NAME}"
+echo "CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-not set}"
 
 echo "Using Python at $(which python)"
 LOG_DIR="${REPO_PATH}/logs/$(date +'%Y%m%d-%H-%M-%S')" #/$(date +'%Y%m%d-%H:%M:%S')"

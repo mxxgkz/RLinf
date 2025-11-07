@@ -200,9 +200,9 @@ class MultiStepRolloutWorker(Worker):
         # Explicitly set CUDA device before moving model
         if torch.cuda.is_available():
             torch.cuda.set_device(self.device if isinstance(self.device, int) else int(str(self.device).split(':')[-1]))
-        print("!"*50)
-        print(f"Current device: {torch.cuda.current_device()}")
-        print(f"Reloading model to device: {device}")
+        # print("!"*50)
+        # print(f"Current device: {torch.cuda.current_device()}")
+        # print(f"Reloading model to device: {device}")
         self.hf_model = self.hf_model.to(device)
         torch.cuda.empty_cache()  # Clear cache after loading
 

@@ -40,7 +40,7 @@ which conda
 
 # Source the setup script that handles venv detection, environment setup, and asset downloads
 # This avoids heredoc variable expansion issues - all variables work normally in a separate script
-source "/home/guo/RL/${FOLDER_NAME}/script/clusters/magics/setup_embodiment_env.sh"
+source "/home/guo/RL/${FOLDER_NAME}/script/clusters/setup_embodiment_env.sh"
 
 # GPU rendering support (needed for ManiSkill/SAPIEN rendering)
 export NVIDIA_DRIVER_CAPABILITIES="all"

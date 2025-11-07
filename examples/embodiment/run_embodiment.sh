@@ -39,7 +39,7 @@ fi
 # NOTE: set LIBERO_REPO_PATH to the path of the LIBERO repo
 export LIBERO_REPO_PATH="${ROOT_DIR}/RL/libero"
 export LIBERO_NO_INPUT=1 # disable the input prompt
-export TORCH_FORCE_WEIGHTS_ONLY_LOAD=0
+export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 # Allow loading NumPy arrays in LIBERO init_states files
 export RAY_DISABLE_PIDFD=1
 # export RAY_LOCAL_MODE=1
 # export CUDA_VISIBLE_DEVICES="6,7"

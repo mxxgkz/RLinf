@@ -1,5 +1,11 @@
 #! /bin/bash
 
+# Check folder name using function from bashrc
+# Source bashrc in a way that doesn't fail if there are errors
+set +u  # Temporarily disable unbound variable check
+source ${HOME}/.bashrc 2>/dev/null || true
+set -u  # Re-enable unbound variable check
+
 # Source bashrc to get the get_rlinf_folder_name function (if available)
 # Define function if it doesn't exist (fallback)
 if ! declare -f get_rlinf_folder_name > /dev/null; then
@@ -67,7 +73,8 @@ export PYTHONPATH=${REPO_PATH}:${LIBERO_REPO_PATH}:$PYTHONPATH
 
 # Base path to the BEHAVIOR dataset, which is the BEHAVIOR-1k repo's dataset folder
 # Only required when running the behavior experiment.
-export OMNIGIBSON_DATA_PATH=$OMNIGIBSON_DATA_PATH
+# Use default value if OMNIGIBSON_DATA_PATH is not set (for non-BEHAVIOR experiments)
+export OMNIGIBSON_DATA_PATH=${OMNIGIBSON_DATA_PATH:-/path/to/omnigibson-data}
 export OMNIGIBSON_DATASET_PATH=${OMNIGIBSON_DATASET_PATH:-$OMNIGIBSON_DATA_PATH/behavior-1k-assets/}
 export OMNIGIBSON_KEY_PATH=${OMNIGIBSON_KEY_PATH:-$OMNIGIBSON_DATA_PATH/omnigibson.key}
 export OMNIGIBSON_ASSET_PATH=${OMNIGIBSON_ASSET_PATH:-$OMNIGIBSON_DATA_PATH/omnigibson-robot-assets/}

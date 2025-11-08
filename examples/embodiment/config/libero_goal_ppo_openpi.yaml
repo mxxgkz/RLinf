@@ -131,7 +131,7 @@ actor:
     use_wrist_image: True
     use_proprio: True
     num_steps: 4
-    sharding_strategy: "shard_grad_op"  # Changed from "no_shard" (deprecated in PyTorch 2.6, causes hangs)
+    sharding_strategy: "no_shard"  # shard_grad_op will results in tensor not on the same device error for libero openpi
     add_value_head: True
     # openpi specific parameters
     openpi:

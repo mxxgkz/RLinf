@@ -185,6 +185,11 @@ class WorkerGroup(Generic[WorkerClsType]):
                 "ACCELERATOR_TYPE": str(accelerator_type.value),
                 "ISOLATE_ACCELERATOR": "1" if placement.isolate_accelerator else "0",
             }
+            # Pass through important environment variables to Ray workers
+            if "LIBERO_NO_INPUT" in os.environ:
+                env_vars["LIBERO_NO_INPUT"] = os.environ["LIBERO_NO_INPUT"]
+            if "TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD" in os.environ:
+                env_vars["TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD"] = os.environ["TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD"]
             env_vars.update(
                 Accelerator.get_accelerator_env_var(
                     accelerator_type, placement.visible_accelerators

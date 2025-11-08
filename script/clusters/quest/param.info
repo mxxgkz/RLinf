@@ -1,1 +1,1 @@
-libero_goal_ppo_pi_0 gengpu 4 32 500 2 libero_goal_ppo_openpi
+libero_goal_ppo_pi gengpu 10 32 500 2 libero_goal_ppo_openpi

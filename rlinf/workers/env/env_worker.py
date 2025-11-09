@@ -194,8 +194,12 @@ class EnvWorker(Worker):
             self._init_simulator()
 
     def _init_simulator(self):
+        import logging
+        logger = logging.getLogger(__name__)
         for i in range(self.stage_num):
+            logger.info(f"[EnvWorker] Starting simulator initialization for stage {i+1}/{self.stage_num} (this may take several minutes for LIBERO environments)...")
             self.simulator_list[i].start_simulator()
+            logger.info(f"[EnvWorker] Simulator stage {i+1} started, getting initial observations...")
             extracted_obs, rewards, terminations, truncations, infos = (
                 self.simulator_list[i].step()
             )
@@ -204,7 +208,9 @@ class EnvWorker(Worker):
             self.last_dones_list.append(
                 dones.unsqueeze(1).repeat(1, self.cfg.actor.model.num_action_chunks)
             )
+            logger.info(f"[EnvWorker] Simulator stage {i+1} initialized successfully, stopping for now...")
             self.simulator_list[i].stop_simulator()
+        logger.info(f"[EnvWorker] All {self.stage_num} simulator stages initialized successfully!")
 
     def env_interact_step(
         self, chunk_actions: torch.Tensor, stage_id: int

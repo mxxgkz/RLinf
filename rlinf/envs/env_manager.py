@@ -184,7 +184,11 @@ class EnvManager:
             self.env = None
         else:
             self.env_cls = env_cls
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(f"[EnvManager] Creating {env_cls.__name__} environment (rank={rank}, num_envs={cfg.num_envs}, this may take several minutes for LIBERO/MuJoCo initialization)...")
             self.env = self.env_cls(cfg, seed_offset, total_num_processes)
+            logger.info(f"[EnvManager] {env_cls.__name__} environment created successfully!")
 
     def start_simulator(self):
         """Start simulator process with shared memory queues"""

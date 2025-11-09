@@ -25,7 +25,8 @@ runner:
     # Optional: wandb_proxy: "http://proxy.example.com:8080"  # If you need a proxy
 
   # Resume from checkpoint - set to null to start from scratch
-  resume_dir: "./logs/20251107-18-26-05/test_openpi/checkpoints/global_step_40"
+  # resume_dir: "./logs/20251107-18-26-05/test_openpi/checkpoints/global_step_40"
+  resume_dir: "./logs/20251108-20-37-35/test_openpi/checkpoints/global_step_80/"
   # resume_dir: null  # Uncomment this to start from scratch
 
   max_epochs: 1000

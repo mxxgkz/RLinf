@@ -48,7 +48,10 @@ export LIBERO_NO_INPUT=1 # disable the input prompt
 export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1 # Allow loading NumPy arrays in LIBERO init_states files
 export RAY_DISABLE_PIDFD=1
 # export RAY_LOCAL_MODE=1
-# export CUDA_VISIBLE_DEVICES="6,7"
+# Set CUDA_VISIBLE_DEVICES to use free GPUs (avoid GPU 0 which is occupied)
+# Check available GPUs with: nvidia-smi
+# Example: Use GPUs 2-3 instead of 0-1
+# export CUDA_VISIBLE_DEVICES="2,3"
 
 # Prevent Python from loading user site-packages to avoid conflicts
 export PYTHONNOUSERSITE=1
@@ -59,10 +62,11 @@ export TF_CPP_MIN_LOG_LEVEL=3
 
 export XLA_PYTHON_CLIENT_MEM_FRACTION=0.8
 
-# PyTorch uses expandable_segments:True by default for better memory management
-# This requires the pidfd_open syscall for CUDA IPC between processes
-# However, this syscall is not available on all systems, so we disable it by default.
-export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:False # Disable Expandable Segments (Immediate Fix)
+# PyTorch memory allocator configuration
+# expandable_segments:True helps reduce fragmentation and is recommended by the error message
+# However, it requires the pidfd_open syscall for CUDA IPC between processes
+# If you get pidfd errors, set to False
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 # export PYTHONPATH="$HOME/RL/libero:$PYTHONPATH"
 

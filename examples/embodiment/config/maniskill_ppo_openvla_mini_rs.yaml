@@ -16,6 +16,7 @@ cluster:
     actor,env,rollout: "0-1"
 
 runner:
+  resume_dir: "./ckpts/20251103-06:10:02/test_openvla/checkpoints/global_step_40"  # Path to your checkpoint
   task_type: embodied
   logger:
     log_path: "../results"
@@ -41,7 +42,7 @@ algorithm:
   group_size: 1
   n_chunk_steps: 80  # Reduced from 160 to save memory
   n_eval_chunk_steps: 80
-  num_group_envs: 64  # Reduced from 128 to save GPU memory
+  num_group_envs: 32  # Reduced from 128 to save GPU memory
   rollout_epoch: 1
   rollout_micro_batch_size: 16  # Smaller batch size for rollout to reduce memory
   logprob_forward_micro_batch_size: 8  # Smaller batch for logprob computation

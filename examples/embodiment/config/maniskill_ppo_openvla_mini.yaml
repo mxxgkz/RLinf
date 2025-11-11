@@ -23,6 +23,12 @@ runner:
     experiment_name: "test_openvla"
     logger_backends: ["tensorboard"] # wandb, swanlab
 
+  # Resume from checkpoint - set to null to start from scratch
+  # resume_dir: "./logs/20251107-11-50-24/test_openvla/checkpoints/global_step_80"
+  # resume_dir: "./logs/20251106-23-39-58/test_openvla/checkpoints/global_step_80"
+  resume_dir: "./logs/20251106-23-39-58/test_openvla/checkpoints/global_step_120"
+  # resume_dir: null  # Uncomment this to start from scratch
+
   max_epochs: 1000
   max_steps: -1
 

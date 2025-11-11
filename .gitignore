@@ -17,4 +17,4 @@ logs/*
 uv.lock
 rlinf/envs/maniskill/assets
 pre_trained_model/*
-ckpt/*
+ckpts/*

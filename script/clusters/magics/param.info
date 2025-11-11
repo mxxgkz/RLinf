@@ -1,2 +1,1 @@
-libero_goal_ppo_pi job_a100 10 64 640 2 libero_goal_ppo_openpi
-libero_10_ppo_pi job_a100 10 64 640 2 libero_10_ppo_openpi
+maniskill_vla_mini_2 job_a100 20 64 640 2 maniskill_ppo_openvla_mini

@@ -25,7 +25,12 @@ runner:
 
   # Resume from checkpoint - set to null to start from scratch
   # resume_dir: "./logs/20251107-11-50-24/test_openvla/checkpoints/global_step_80"
-  resume_dir: "./logs/20251109-03-57-49/test_openvla/checkpoints/global_step_160"
+  # resume_dir: "./logs/20251109-03-57-49/test_openvla/checkpoints/global_step_160"
+  # resume_dir: "./logs/20251110-22-55-45/test_openvla/checkpoints/global_step_240"
+  # resume_dir: "./logs/20251114-08-48-51/test_openvla/checkpoints/global_step_280"
+  # resume_dir: "./logs/20251115-13-03-50/test_openvla/checkpoints/global_step_320"
+  # resume_dir: "./logs/20251118-01-09-28/test_openvla/checkpoints/global_step_400"
+  resume_dir: "./logs/20251120-11-52-03/test_openvla/checkpoints/global_step_440"
   # resume_dir: null  # Uncomment this to start from scratch
 
   max_epochs: 1000

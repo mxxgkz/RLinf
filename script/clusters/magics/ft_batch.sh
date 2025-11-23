@@ -4,7 +4,16 @@
 source ${HOME}/.bashrc
 SCRIPT_DIR="$( cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "REPO_PATH = ${SCRIPT_DIR}"
-FOLDER_NAME=$(get_rlinf_folder_name "$SCRIPT_DIR")
+
+# Extract folder name from script path more reliably
+# Script is at: /home/guo/RL/RLinf/script/clusters/quest/ft_batch.sh
+# Extract "RLinf" from the path
+if [[ "$SCRIPT_DIR" =~ /home/guo/RL/([^/]+)/ ]]; then
+    FOLDER_NAME="${BASH_REMATCH[1]}"
+else
+    # Fallback to function if regex doesn't match
+    FOLDER_NAME=$(get_rlinf_folder_name "$SCRIPT_DIR")
+fi
 echo "FOLDER_NAME = ${FOLDER_NAME}"
 
 while IFS=$' ' read IDX PAR HOUR CORE MEM NGPU CFG_NAME

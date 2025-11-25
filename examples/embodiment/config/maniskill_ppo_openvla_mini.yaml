@@ -30,8 +30,9 @@ runner:
   # resume_dir: "./logs/20251106-23-39-58/test_openvla/checkpoints/global_step_120"
   # quest:
   # resume_dir: "./logs/20251115-16-09-25/test_openvla/checkpoints/global_step_40"
-  resume_dir: "./logs/20251118-00-08-01/test_openvla/checkpoints/global_step_80"
+  # resume_dir: "./logs/20251118-00-08-01/test_openvla/checkpoints/global_step_80"
   # resume_dir: "./logs/20251118-00-08-01/test_openvla/checkpoints/global_step_120"
+  resume_dir: "./logs/20251123-19-50-16/test_openvla/checkpoints/global_step_160"
   # resume_dir: null  # Uncomment this to start from scratch
 
   max_epochs: 1000
@@ -39,7 +40,7 @@ runner:
 
   only_eval: False
   val_check_interval: -1
-  save_interval: 10
+  save_interval: 80
   seq_length: 2048  # Reduced from 4096 to save GPU memory
   max_prompt_length: 30
 
